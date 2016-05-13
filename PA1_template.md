@@ -36,6 +36,7 @@ head(activitydata)
 source("multiplot.R")
 library(dplyr)
 library(ggplot2)
+library(lubridate)
 
 ## 1. Calculate the total number of steps taken per day
 
@@ -214,22 +215,59 @@ multiplot(a, b, cols=2)
 ```r
 ## Mean and median of the original data
 
-paste("Mean:", mean(sum.activitydata$stepsday), "Median:", median(sum.activitydata$stepsday))
+paste("Mean:", round(mean(sum.activitydata$stepsday)), "Median:", median(sum.activitydata$stepsday))
 ```
 
 ```
-## [1] "Mean: 10766.1886792453 Median: 10765"
+## [1] "Mean: 10766 Median: 10765"
 ```
 
 ```r
 ## Mean and median of the filled data
 
-paste("Mean:", mean(sum.filled.data$stepsday), "Median:", median(sum.filled.data$stepsday))
+paste("Mean:", round(mean(sum.filled.data$stepsday)), "Median:", median(sum.filled.data$stepsday))
 ```
 
 ```
-## [1] "Mean: 10765.6393442623 Median: 10762"
+## [1] "Mean: 10766 Median: 10762"
 ```
-
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+### 1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+
+
+```r
+filled.data$day_type <- "weekday"
+filled.data$day_type[wday(filled.data$date) == 7 | wday(filled.data$date) == 1] <- "weekend"
+
+filled.data$day_type <- as.factor(filled.data$day_type)
+
+str(filled.data)
+```
+
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ steps   : int  2 0 0 0 0 2 1 1 0 1 ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ day_type: Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 1 1 1 1 1 ...
+```
+
+### 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+
+```r
+days.filled.data <- filled.data %>%
+    group_by(day_type, interval) %>%
+    summarise(stepsday = mean(steps))
+
+ggplot(days.filled.data, aes(interval, stepsday)) +
+    geom_line() +
+    facet_grid(day_type ~ .) +
+    xlab("5-minute interval") +
+    ylab("Mean steps taken")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+
