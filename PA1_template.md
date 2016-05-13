@@ -33,6 +33,7 @@ head(activitydata)
 ```r
 ## Load dplyr package to summarise the number of steps and ggplot2 for the plot
 
+source("multiplot.R")
 library(dplyr)
 library(ggplot2)
 
@@ -40,14 +41,13 @@ library(ggplot2)
 
 ## Create a new data set without NAs
 
-actdata <- activitydata[complete.cases(activitydata), ]
+unfilled.data <- activitydata[complete.cases(activitydata), ]
 
 ## Sum all the steps taked each day by summarising the data of each date ignoring dates that have NA values
 
-sum.activitydata <- actdata %>%
+sum.activitydata <- unfilled.data %>%
     group_by(date) %>%
-    summarise(stepsday = sum(steps)) %>%
-    na.omit
+    summarise(stepsday = sum(steps))
 
 head(sum.activitydata)
 ```
@@ -109,7 +109,7 @@ paste("Median", as.integer(mediansteps))
 ```r
 ## Sum all the steps taken in each 5-minute interval
 
-mean.interval <- actdata %>%
+mean.interval <- unfilled.data %>%
     group_by(interval) %>%
     summarise(stepsinterval = mean(steps))
 ```
@@ -126,6 +126,110 @@ qplot(mean.interval$interval, mean.interval$stepsinterval, geom = "line")
 
 ## Imputing missing values
 
+### 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+
+
+```r
+NAscount <- table(complete.cases(activitydata))[[1]]
+
+paste("Number of values with NA:", NAscount)
+```
+
+```
+## [1] "Number of values with NA: 2304"
+```
+
+### 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+### 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+
+```r
+## Join the original data set with the one that has the mean for each interval, to fill in the missing values
+
+## round the mean values of each interval
+
+mean.interval$stepsinterval <- as.integer(round(mean.interval$stepsinterval, digits = 0))
+
+## Create a new data frame that has all the NA values filled with the mean of each 5 minute interval
+
+filled.data <- inner_join(filter(activitydata, is.na(steps)), mean.interval, by = "interval")
+
+filled.data <- rename(select(filled.data, -1), steps = stepsinterval)
+
+filled.data <- rbind(filled.data, filter(activitydata, !is.na(steps)))
+
+## Reorder the columns to match the original data set
+
+filled.data <- select(filled.data, steps, date, interval)
+```
+
+### Original data, not filled looks like this
+
+
+```r
+glimpse(activitydata)
+```
+
+```
+## Observations: 17,568
+## Variables: 3
+## $ steps    (int) NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N...
+## $ date     (date) 2012-10-01, 2012-10-01, 2012-10-01, 2012-10-01, 2012...
+## $ interval (int) 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 100, 10...
+```
+
+### Filled data looks like this
+
+
+```r
+glimpse(filled.data)
+```
+
+```
+## Observations: 17,568
+## Variables: 3
+## $ steps    (int) 2, 0, 0, 0, 0, 2, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,...
+## $ date     (date) 2012-10-01, 2012-10-01, 2012-10-01, 2012-10-01, 2012...
+## $ interval (int) 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 100, 10...
+```
+
+### 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+
+```r
+sum.filled.data <- filled.data %>%
+    group_by(date) %>%
+    summarise(stepsday = sum(steps))
+
+a <- qplot(x = sum.activitydata$stepsday, bins = 10, main = "Original data")
+
+b <- qplot(x = sum.filled.data$stepsday, bins = 10, main = "Filled data")
+
+multiplot(a, b, cols=2)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
+```r
+## Mean and median of the original data
+
+paste("Mean:", mean(sum.activitydata$stepsday), "Median:", median(sum.activitydata$stepsday))
+```
+
+```
+## [1] "Mean: 10766.1886792453 Median: 10765"
+```
+
+```r
+## Mean and median of the filled data
+
+paste("Mean:", mean(sum.filled.data$stepsday), "Median:", median(sum.filled.data$stepsday))
+```
+
+```
+## [1] "Mean: 10765.6393442623 Median: 10762"
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
