@@ -128,11 +128,15 @@ qplot(mean.interval$interval, mean.interval$stepsinterval, geom = "line")
 
 
 ```r
-max(mean.interval$stepsinterval)
+mean.interval[which.max( mean.interval$stepsinterval ), 1]
 ```
 
 ```
-## [1] 206.1698
+## Source: local data frame [1 x 1]
+## 
+##   interval
+##      (int)
+## 1      835
 ```
 
 
