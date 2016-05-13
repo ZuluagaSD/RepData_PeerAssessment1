@@ -100,7 +100,7 @@ qplot(mean.interval$interval, mean.interval$stepsinterval, geom = "line")
 ### 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 ```{r}
-max(mean.interval$stepsinterval)
+mean.interval[which.max( mean.interval$stepsinterval ), 1]
 ```
 
 
