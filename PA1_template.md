@@ -124,6 +124,17 @@ qplot(mean.interval$interval, mean.interval$stepsinterval, geom = "line")
 
 ![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
+### 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+
+```r
+max(mean.interval$stepsinterval)
+```
+
+```
+## [1] 206.1698
+```
+
 
 ## Imputing missing values
 
@@ -210,7 +221,7 @@ b <- qplot(x = sum.filled.data$stepsday, bins = 10, main = "Filled data")
 multiplot(a, b, cols=2)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 ```r
 ## Mean and median of the original data
@@ -269,5 +280,5 @@ ggplot(days.filled.data, aes(interval, stepsday)) +
     ylab("Mean steps taken")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
